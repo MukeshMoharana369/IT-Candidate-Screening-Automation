@@ -1,0 +1,2548 @@
+{
+  "name": "IT Candidate Screening Automation System",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Get the raw JSON string from AI response\nconst rawJsonString = $input.first().json.content?.parts?.[0]?.text || '';\n\nif (!rawJsonString.trim()) {\n  return [{\n    json: {\n      error: \"No scoring data found\"\n    }\n  }];\n}\n\ntry {\n  // Parse the JSON\n  const parsed = JSON.parse(rawJsonString);\n\n  // Return flat or nested structure — your choice!\n  return [{\n    json: {\n      totalScore: parsed.totalScore || 0,\n      skillsScore: parsed.breakdown?.skillsScore || 0,\n      experienceScore: parsed.breakdown?.experienceScore || 0,\n      noticePeriodScore: parsed.breakdown?.noticePeriodScore || 0,\n      educationScore: parsed.breakdown?.educationScore || 0,\n      companyScore: parsed.breakdown?.companyScore || 0,\n      bonusScore: parsed.breakdown?.bonusScore || 0,\n      reasoning: parsed.reasoning || \"Not available\"\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      error: \"Failed to parse scoring JSON\",\n      rawInput: rawJsonString\n    }\n  }];\n}"
+      },
+      "id": "1527a84d-6c3b-4671-838d-ada853010008",
+      "name": "Parse Score Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2944,
+        2720
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "category",
+              "value": "={{ \n  $json.totalScore >= 70 \n    ? 'Shortlist' \n    : ($json.totalScore >= 40 \n        ? 'Review' \n        : 'Reject'\n      ) \n}}\n",
+              "type": "string"
+            },
+            {
+              "id": "01b5c572-cb17-48dd-b67e-4f85851e9881",
+              "name": "recruiter mail",
+              "value": "moharanamanoranjan56@gmail.com",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "50e81ccf-f959-4fb5-84fa-575470619ff6",
+      "name": "Categorize Candidate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3168,
+        2720
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "category",
+              "value": "Parsing Failed",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "resume text",
+              "value": "={{ $json.error }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "processedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "errorMessage",
+              "value": "Resume parsing failed - manual review required",
+              "type": "string"
+            },
+            {
+              "id": "59c6a054-bc9d-437d-b5da-6d8678d602fe",
+              "name": "recruiter mail",
+              "value": "moharanamanoranjan56@gmail.com",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "3a44ff07-f132-4cab-a5fe-fda20b360448",
+      "name": "Mark Parsing Failed",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1696,
+        3104
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['recruiter mail'] }}",
+        "subject": "⚠️ Resume Parsing Failed",
+        "message": "=The system could not extract data from a candidate's resume. Manual review required.\n\nResume URL:\n{{ $json['resume text'] }}\nError:\n{{ $json.errorMessage }}\n\nProcessed At:\n{{ $json.processedAt }}\n\nWhat to do:\n- Open the resume link\n- Review manually\n- Update status in your tracker\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2144,
+        3104
+      ],
+      "id": "3aefee85-9fab-4fff-a717-0a8915401875",
+      "name": "Send a message",
+      "webhookId": "053ea82e-4ee7-47a8-bb26-ff4f9bd19dc7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NmUItFE5zfsf8xfm",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ",
+          "mode": "list",
+          "cachedResultName": "IT Candidate Screening Application (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 562248036,
+          "mode": "list",
+          "cachedResultName": "ERROR",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit#gid=562248036"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "resume",
+              "displayName": "resume",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Role Applying For",
+              "displayName": "Role Applying For",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notice Period",
+              "displayName": "Notice Period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Experience (in year)",
+              "displayName": "Total Experience (in year)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "submittedAt",
+              "displayName": "submittedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "resume text",
+              "displayName": "resume text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "processedAt",
+              "displayName": "processedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "errorMessage",
+              "displayName": "errorMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "recruiter mail",
+              "displayName": "recruiter mail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1920,
+        3104
+      ],
+      "id": "457b3fe4-826e-4263-8d78-717ca8694a67",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4imvPQ4nmeQps7Q0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "resume",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        3008
+      ],
+      "id": "f8f16903-2d11-4a82-a111-b4efbcb35029",
+      "name": "Extract from File",
+      "notesInFlow": true,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Categorize Candidate').item.json['recruiter mail'] }}",
+        "subject": "🎯 New Candidate Processed",
+        "emailType": "text",
+        "message": "=🎯 New Candidate Processed  Name:{{ $('Append row in sheet').item.json['Full Name'] }}  Role Applied: {{ $('Scoring Configuration').item.json['Role Applying For'] }} Category: {{ $json.screening_category }} Score: {{ $json.score_total }}/100  ---------------------- Candidate Details ---------------------- Email: {{ $('Scoring Configuration').item.json['Email Address'] }} Phone: {{ $('Scoring Configuration').item.json['Phone Number'] }} Experience: {{ $('Scoring Configuration').item.json.parsed_experience_years }} years Notice Period: {{ $('Scoring Configuration').item.json['Notice Period'] }} days Education: {{ $('Scoring Configuration').item.json.parsed_education }} Current Company: {{ $('Scoring Configuration').item.json.parsed_current_company }} Location:   ---------------------- Skills Extracted ---------------------- {{ $('Scoring Configuration').item.json.parsed_skills }}  ---------------------- Scoring Breakdown ----------------------  Experience: {{ $('Scoring Configuration').item.json.parsed_experience_years }} Notice Period: {{ $('Scoring Configuration').item.json['Notice Period'] }} Education: {{ $('Scoring Configuration').item.json.parsed_education }} Company Background:  Bonus Factors:   ---------------------- Reasoning ----------------------  {{ $('Categorize Candidate').item.json.reasoning }} Text from resume: {{ $('Extract from File').item.json.text }} Processed At: {{ $json.Timestamp }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3824,
+        2528
+      ],
+      "id": "ea883d67-660f-44db-83ca-328db1ff32cd",
+      "name": "Send a message1",
+      "webhookId": "053ea82e-4ee7-47a8-bb26-ff4f9bd19dc7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NmUItFE5zfsf8xfm",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ",
+          "mode": "list",
+          "cachedResultName": "IT Candidate Screening Application (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1428684283,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit#gid=1428684283"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $('Append row in sheet').item.json.Timestamp }}",
+            "score_total": "={{ $json.totalScore }}",
+            "screening_category": "={{ $json.category }}",
+            "score_reason": "={{ $json.reasoning }}"
+          },
+          "matchingColumns": [
+            "Timestamp"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Role Applying For",
+              "displayName": "Role Applying For",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Upload Resume (PDF Only)",
+              "displayName": "Upload Resume (PDF Only)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Experience (Years)",
+              "displayName": "Total Experience (Years)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notice Period",
+              "displayName": "Notice Period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "parsed_skills",
+              "displayName": "parsed_skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "parsed_experience_years",
+              "displayName": "parsed_experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "parsed_current_company",
+              "displayName": "parsed_current_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "parsed_education",
+              "displayName": "parsed_education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary ",
+              "displayName": "summary ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "screening_category",
+              "displayName": "screening_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score_reason",
+              "displayName": "score_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3392,
+        2720
+      ],
+      "id": "5e8400ca-7093-4b15-baf8-1ac61afaeb30",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4imvPQ4nmeQps7Q0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-lite-preview-06-17",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-lite-preview-06-17"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Candidate Data: {{ JSON.stringify($('Edit Fields').first().json) }} \n\n\nScoring Configuration: {{ JSON.stringify($('Scoring Configuration').first().json) }}  "
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "systemMessage": "You are an IT Candidate Scoring Engine. Your job is to evaluate a candidate using the candidate data and scoring configuration provided.\n\nYou MUST score strictly out of 100 points, applying the exact weightages and point rules below.\n\n=====================================================================\nWEIGHTAGES (Provided in Scoring Configuration)\n=====================================================================\nskillsWeightage\nexperienceWeightage\nnoticePeriodWeightage\neducationWeightage\ncompanyWeightage\nbonusWeightage\n\nThese add up to 100 when combined.\n\n=====================================================================\nSCORING RULES — FOLLOW EXACTLY\n=====================================================================\n\n-------------------------\n1. SKILLS MATCH (skillsWeightage points)\n-------------------------\nCompare candidate.skills with requiredSkills.\n\nScoring:\n- 100% match → full skillsWeightage points\n- 70–99% match → 80% of skillsWeightage\n- 40–69% match → 50% of skillsWeightage\n- 10–39% match → 20% of skillsWeightage\n- <10% or no match → 0 points\n\nIf requiredSkills list is empty → give 50% of skillsWeightage by default.\n\n-------------------------\n2. EXPERIENCE (experienceWeightage points)\n-------------------------\nCompare candidate.experienceYears with minExperience.\n\nScoring:\n- experienceYears >= minExperience + 2 years → full points\n- experienceYears >= minExperience → 80% of points\n- experienceYears = minExperience - 1 → 40% of points\n- experienceYears < minExperience - 1 → 10% of points\n- No experience info → 0 points\n\n-------------------------\n3. NOTICE PERIOD (noticePeriodWeightage points)\n-------------------------\nInterpret notice period as days.\n\nScoring:\n- 0–15 days → full points\n- 16–30 days → 75% points\n- 31–60 days → 40% points\n- >60 days → 10% points\n- Missing → 0 points\n\n-------------------------\n4. EDUCATION (educationWeightage points)\n-------------------------\n\nHigh-value degrees (B.Tech, B.E, MCA, B.Sc IT, M.Tech, CS/IT):\n    → full points\n\nAverage degrees (BCA, B.Com with IT certs, non-CS engineering):\n    → 60% points\n\nLow relevance / generic degree (BA, BBA, no degree listed):\n    → 30% points\n\nNo education data:\n    → 0 points\n\n-------------------------\n5. COMPANY REPUTATION (companyWeightage points)\n-------------------------\n\nTier 1 (Microsoft, Google, Amazon, Adobe, Uber, etc):\n    → full points\n\nTier 2 (TCS, Infosys, Wipro, Accenture, Cognizant, Capgemini, product startups):\n    → 70% points\n\nTier 3 (unknown companies, freelance, short-term):\n    → 30% points\n\nNo company info:\n    → 0 points\n\n-------------------------\n6. BONUS FACTORS (bonusWeightage points)\n-------------------------\n\nAward bonus points based on special achievements:\n- Has tech certifications (AWS, Azure, GCP, Java, etc) → +40% of bonusWeightage\n- Has awards / hackathons → +40%\n- Open-source contributions / GitHub presence → +20%\n- Publications / notable achievements → +20%\n\nMaximum = bonusWeightage  \nIf no achievements → 0\n\n=====================================================================\nCATEGORY RULES (IMPORTANT)\n=====================================================================\n\nAfter scoring:\n- totalScore >= 70 → \"Shortlist\"\n- totalScore >= 40 and < 70 → \"Review\"\n- totalScore < 40 → \"Reject\"\n\n=====================================================================\nRESPONSE FORMAT (MANDATORY)\n=====================================================================\nReturn ONLY valid JSON:\n\n{\n  \"totalScore\": number,\n  \"breakdown\": {\n    \"skillsScore\": number,\n    \"experienceScore\": number,\n    \"noticePeriodScore\": number,\n    \"educationScore\": number,\n    \"companyScore\": number,\n    \"bonusScore\": number\n  },\n  \"reasoning\": \"Short explanation of why you gave this score.\"\n}\n\nNO extra text. NO commentary. Only JSON.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        2592,
+        2912
+      ],
+      "id": "7c84dcfa-8801-4557-9682-49905d96a46d",
+      "name": "Message a model1",
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "fxAroahKzqPetXC8",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "requiredSkills",
+              "value": "=",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "skillsWeightage",
+              "value": 30,
+              "type": "number"
+            },
+            {
+              "id": "id-3",
+              "name": "experienceWeightage",
+              "value": 25,
+              "type": "number"
+            },
+            {
+              "id": "id-4",
+              "name": "noticePeriodWeightage",
+              "value": 15,
+              "type": "number"
+            },
+            {
+              "id": "id-5",
+              "name": "educationWeightage",
+              "value": 15,
+              "type": "number"
+            },
+            {
+              "id": "id-6",
+              "name": "companyWeightage",
+              "value": 10,
+              "type": "number"
+            },
+            {
+              "id": "id-7",
+              "name": "bonusWeightage",
+              "value": 5,
+              "type": "number"
+            },
+            {
+              "id": "id-8",
+              "name": "minExperience",
+              "value": 2,
+              "type": "number"
+            },
+            {
+              "id": "id-9",
+              "name": "maxNoticePeriod",
+              "value": 60,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "61979635-0aa8-4279-acaa-535cafab36be",
+      "name": "Scoring Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2368,
+        2912
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "Candidates form",
+        "formDescription": "please fill all the information ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name",
+              "placeholder": "Enter your name"
+            },
+            {
+              "fieldLabel": "resume",
+              "fieldType": "file",
+              "multipleFiles": false
+            },
+            {
+              "fieldLabel": "Email Address",
+              "fieldType": "email",
+              "placeholder": "mail "
+            },
+            {
+              "fieldLabel": "Phone Number",
+              "fieldType": "number"
+            },
+            {
+              "fieldLabel": "Role Applying For",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Backend Developer"
+                  },
+                  {
+                    "option": "Frontend Developer"
+                  },
+                  {
+                    "option": "Full-Stack Developer"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Notice Period",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Immediate"
+                  },
+                  {
+                    "option": "15 Days"
+                  },
+                  {
+                    "option": "30 Days"
+                  },
+                  {
+                    "option": "45 Days"
+                  },
+                  {
+                    "option": "60 Days"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Total Experience (in year)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        1248,
+        3008
+      ],
+      "id": "2b8293e1-a62f-4f85-a09e-ac354b5cdfdd",
+      "name": "On form submission",
+      "webhookId": "726f1564-3346-4706-a21a-4a406c85a5ce"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ",
+          "mode": "list",
+          "cachedResultName": "IT Candidate Screening Application (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1428684283,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit#gid=1428684283"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Total Experience (Years)": "={{ $('On form submission').item.json['Total Experience (in year)'] }}",
+            "Timestamp": "={{ $('On form submission').item.json.submittedAt }}",
+            "Full Name": "={{ $('On form submission').item.json.Name }}",
+            "Upload Resume (PDF Only)": "={{ $('On form submission').item.json.resume }}",
+            "Email Address": "={{ $('On form submission').item.json['Email Address'] }}",
+            "Phone Number": "={{ $('On form submission').item.json['Phone Number'] }}",
+            "Role Applying For": "={{ $('On form submission').item.json['Role Applying For'] }}",
+            "Notice Period": "={{ $('On form submission').item.json['Notice Period'] }}",
+            "parsed_skills": "={{ $json.skills }}",
+            "parsed_experience_years": "={{ $json['Total Experience (in year)'] }}",
+            "parsed_current_company": "={{ $json.parsed_current_company }}",
+            "parsed_education": "={{ $json.education }}",
+            "summary ": "={{ $json.summary }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Role Applying For",
+              "displayName": "Role Applying For",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Upload Resume (PDF Only)",
+              "displayName": "Upload Resume (PDF Only)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Experience (Years)",
+              "displayName": "Total Experience (Years)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notice Period",
+              "displayName": "Notice Period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "parsed_skills",
+              "displayName": "parsed_skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "parsed_experience_years",
+              "displayName": "parsed_experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "parsed_current_company",
+              "displayName": "parsed_current_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "parsed_education",
+              "displayName": "parsed_education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary ",
+              "displayName": "summary ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "screening_category",
+              "displayName": "screening_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score_reason",
+              "displayName": "score_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2144,
+        2912
+      ],
+      "id": "7e312fd5-5a7a-4cc3-9ed9-5279708296a1",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4imvPQ4nmeQps7Q0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const resumeText = $input.first().json.resume || $input.first().json.text || '';\n\nif (!resumeText || !resumeText.trim()) {\n  return [{\n    json: {\n      summary: \"Not available\",\n      fullName: \"Not available\",\n      email: \"Not available\",\n      phone: \"Not available\",\n      location: \"Not available\",\n      experience: \"Not available\",\n      skills: [\"Not available\"],\n      education: \"Not available\",\n      currentCompany: \"Not available\",\n      jobRole: \"Not available\",\n      noticePeriod: \"Not available\"\n    }\n  }];\n}\n\nconst lines = resumeText\n  .split('\\n')\n  .map(line => line.trim())\n  .filter(line => line !== '');\n\nconst result = {\n  summary: \"Not available\",\n  fullName: \"Not available\",\n  email: \"Not available\",\n  phone: \"Not available\",\n  location: \"Not available\",\n  experience: \"Not available\",\n  skills: [\"Not available\"],\n  education: \"Not available\",\n  currentCompany: \"Not available\",\n  jobRole: \"Not available\",\n  noticePeriod: \"Not available\"\n};\n\n// --- 1. SUMMARY: first 1–2 lines until a line looks like a header or contact ---\nlet summaryLines = [];\nfor (let i = 0; i < lines.length; i++) {\n  const line = lines[i];\n  // Stop if we hit contact info, all-caps, or section headers\n  if (\n    line.includes('@') ||\n    line.match(/^\\+?\\d/) ||\n    line === line.toUpperCase() ||\n    ['skills', 'work experience', 'education', 'projects'].some(hdr => line.toLowerCase().includes(hdr))\n  ) {\n    break;\n  }\n  summaryLines.push(line);\n}\nresult.summary = summaryLines.join(' ').trim() || \"Not available\";\n\n// --- 2. Name: line before \"Skills\" ---\nconst skillsIndex = lines.findIndex(line => line.toLowerCase() === 'skills');\nif (skillsIndex > 0) {\n  result.fullName = lines[skillsIndex - 1].replace(/[^A-Za-z\\s]/g, ' ').replace(/\\s+/g, ' ').trim() || \"Not available\";\n}\n\n// --- 3. Email ---\nconst emailMatch = resumeText.match(/[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}/);\nresult.email = emailMatch ? emailMatch[0] : \"Not available\";\n\n// --- 4. Phone ---\nconst phoneMatch = resumeText.match(/(?:\\+?\\d{1,3}[-.\\s]?)?\\(?\\d{3}\\)?[-.\\s]?\\d{3}[-.\\s]?\\d{4}/);\nresult.phone = phoneMatch ? phoneMatch[0] : \"Not available\";\n\n// --- 5. Location ---\nconst locationLine = lines.find(line => \n  line.includes(',') && \n  (line.toLowerCase().includes('india') || line.match(/^[A-Z][a-z]+,\\s*[A-Z][a-z]+/))\n);\nresult.location = locationLine || \"Not available\";\n\n// --- 6. Experience ---\nconst expMatch = resumeText.match(/(\\d+(?:\\.\\d+)?)\\s*(?:years?|yrs?)/i);\nresult.experience = expMatch ? parseFloat(expMatch[1]) : \"Not available\";\n\n// --- 7. Skills ---\nif (skillsIndex !== -1) {\n  const workExpIndex = lines.findIndex((line, i) => i > skillsIndex && line.toLowerCase().includes('work experience'));\n  const end = workExpIndex !== -1 ? workExpIndex : lines.length;\n  const skillList = lines.slice(skillsIndex + 1, end).filter(line => line);\n  result.skills = skillList.length > 0 ? skillList : [\"Not available\"];\n}\n\n// --- 8. Education ---\nconst eduIndex = lines.findIndex(line => line.toLowerCase() === 'education');\nif (eduIndex !== -1 && eduIndex + 1 < lines.length) {\n  result.education = lines[eduIndex + 1] || \"Not available\";\n}\n\n// --- 9. Current Company & Job Role ---\nconst workExpIndex = lines.findIndex(line => line.toLowerCase().includes('work experience'));\nif (workExpIndex !== -1 && workExpIndex + 1 < lines.length) {\n  const jobLine = lines[workExpIndex + 1];\n  if (jobLine.includes('—') || jobLine.includes('-')) {\n    const [role, company] = jobLine.split(/—|-/).map(s => s.trim());\n    result.jobRole = role || \"Not available\";\n    result.currentCompany = company || \"Not available\";\n  } else {\n    result.jobRole = jobLine || \"Not available\";\n    result.currentCompany = \"Not available\";\n  }\n}\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        2912
+      ],
+      "id": "3599d5f9-669c-46fd-8142-d831c127f3f9",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "753ca2ee-3540-4627-a1eb-0282f674dc80",
+              "name": "Name",
+              "value": "={{ $('On form submission').item.json.Name }}",
+              "type": "string"
+            },
+            {
+              "id": "f2164ba6-7cad-4baf-a329-da2c6ea7a61d",
+              "name": "Email Address",
+              "value": "={{ $('On form submission').item.json['Email Address'] }}",
+              "type": "string"
+            },
+            {
+              "id": "f8aace32-a271-43de-a7d9-e3dd8b0b9e17",
+              "name": "Phone Number",
+              "value": "={{ $('On form submission').item.json['Phone Number'] }}",
+              "type": "number"
+            },
+            {
+              "id": "4fb5ed6f-e3e0-4e90-a40f-bc174df46919",
+              "name": "Role Applying For",
+              "value": "={{ $('On form submission').item.json['Role Applying For'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1bc71baa-4959-4a24-8e81-50c621209674",
+              "name": "Total Experience (in year)",
+              "value": "={{ $('On form submission').item.json['Total Experience (in year)'] }}",
+              "type": "string"
+            },
+            {
+              "id": "5e634006-d8a2-475f-8f90-0b1cf75b2992",
+              "name": "Notice Period",
+              "value": "={{ $('On form submission').item.json['Notice Period'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a8415210-ba8f-430a-a658-1a5c3e7bae07",
+              "name": "submittedAt",
+              "value": "={{ $('On form submission').item.json.submittedAt }}",
+              "type": "string"
+            },
+            {
+              "id": "5c0c4056-052b-45ac-8c38-9a319a8a7987",
+              "name": "location",
+              "value": "={{ $json.location }}",
+              "type": "string"
+            },
+            {
+              "id": "ab2a6ab1-9472-4461-99e4-25f629536c49",
+              "name": "skills",
+              "value": "={{ $json.skills }}",
+              "type": "array"
+            },
+            {
+              "id": "e19a87fe-21a2-41a6-be78-f12c4c124f6f",
+              "name": "education",
+              "value": "={{ $json.education }}",
+              "type": "string"
+            },
+            {
+              "id": "55b16c47-3d2e-4b1c-a9be-8a8c73c887ee",
+              "name": "summary",
+              "value": "={{ $json.summary }}",
+              "type": "string"
+            },
+            {
+              "id": "8b1f7dcb-e1ac-4fca-a754-6a495e1f7749",
+              "name": "parsed_current_company",
+              "value": "={{ $json.currentCompany }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1920,
+        2912
+      ],
+      "id": "2d0e7bae-e702-4acd-85bf-2eb9398c0388",
+      "name": "Edit Fields",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.screening_category }}",
+                    "rightValue": "Shortlist",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "40ebcd74-ab30-4ceb-bf3b-f073f3408ee4"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e1d80276-edc2-4d12-adb8-c027ae4426f3",
+                    "leftValue": "={{ $json.screening_category }}",
+                    "rightValue": "Review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "23e195e1-6a1d-44ed-8325-79252a4cd4de",
+                    "leftValue": "={{ $json.screening_category }}",
+                    "rightValue": "Reject",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        3616,
+        2704
+      ],
+      "id": "4449cc58-25b9-4e2a-b914-4102922989f4",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Categorize Candidate').item.json['recruiter mail'] }}",
+        "subject": "🟡 Candidate Requires Manual Review",
+        "message": "=  Name: {{ $json.fullName }} Role Applied: {{ $json.jobRole }}  Category: Review Score: {{ $json.totalScore }}/100  ----------------------------- Why This Candidate Needs Review ----------------------------- {{ $json.reasoning }}  ----------------------------- Candidate Details ----------------------------- Email: {{ $json.email }} Phone: {{ $json.phone }} Experience: {{ $json.experience }} years Notice Period: {{ $json.noticePeriod }} days Education: {{ $json.education }} Current Company: {{ $json.currentCompany }} Location: {{ $json.location }}  ----------------------------- Skills Extracted ----------------------------- {{ $json.skills.join(\", \") }}  ----------------------------- Scoring Breakdown ----------------------------- Skills: {{ $json.breakdown.skillsScore }} Experience: {{ $json.breakdown.experienceScore }} Notice Period: {{ $json.breakdown.noticePeriodScore }} Education: {{ $json.breakdown.educationScore }} Company: {{ $json.breakdown.companyScore }} Bonus: {{ $json.breakdown.bonusScore }}  ----------------------------- Required Action ----------------------------- Please review this candidate manually and decide whether to move forward.  Resume: {{ $json.resumeUrl }}  Processed At: {{ $json.processedAt }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3840,
+        2720
+      ],
+      "id": "412b86fb-8adb-4380-87e5-5c827540c8da",
+      "name": "Send a message2",
+      "webhookId": "630dc602-51a2-4864-a551-7f7c9ed098db",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NmUItFE5zfsf8xfm",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2960,
+        3088
+      ],
+      "id": "2e20d48a-5b70-4edd-9578-f8a6b371aaac",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ",
+          "mode": "list",
+          "cachedResultName": "IT Candidate Screening Application (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 40854308,
+          "mode": "list",
+          "cachedResultName": "Reject",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit#gid=40854308"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Full Name": "={{ $('On form submission').item.json.Name }}",
+            "Email Address": "={{ $('On form submission').item.json['Email Address'] }}",
+            "Phone Number": "={{ $('On form submission').item.json['Phone Number'] }}",
+            "Role Applying For": "={{ $('On form submission').item.json['Role Applying For'] }}",
+            "Upload Resume (PDF Only)": "={{ $('Extract from File').item.json.text }}",
+            "Total Experience (Years)": "={{ $('On form submission').item.json['Total Experience (in year)'] }}",
+            "Notice Period": "={{ $('On form submission').item.json['Notice Period'] }}",
+            "parsed_experience_years": "={{ $('Scoring Configuration').item.json.parsed_experience_years }}",
+            "parsed_education": "={{ $('Scoring Configuration').item.json.parsed_education }}",
+            "parsed_current_company": "={{ $('Scoring Configuration').item.json.parsed_current_company }}",
+            "summary ": "={{ $('Scoring Configuration').item.json['summary '] }}",
+            "score_total": "={{ $('Parse Score Response').item.json.totalScore }}",
+            "screening_category": "={{ $('Categorize Candidate').item.json.category }}",
+            "score_reason": "={{ $('Categorize Candidate').item.json.reasoning }}",
+            "parsed_skills": "{{ $('Code in JavaScript1').item.json.skills }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Role Applying For",
+              "displayName": "Role Applying For",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Upload Resume (PDF Only)",
+              "displayName": "Upload Resume (PDF Only)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Experience (Years)",
+              "displayName": "Total Experience (Years)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notice Period",
+              "displayName": "Notice Period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_skills",
+              "displayName": "parsed_skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_experience_years",
+              "displayName": "parsed_experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_current_company",
+              "displayName": "parsed_current_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_education",
+              "displayName": "parsed_education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary ",
+              "displayName": "summary ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "screening_category",
+              "displayName": "screening_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score_reason",
+              "displayName": "score_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3840,
+        2912
+      ],
+      "id": "0c113f13-36b6-4cf1-9641-7b69d24b0603",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4imvPQ4nmeQps7Q0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['recruiter mail'] }}",
+        "subject": "⚠️ Resume Parsing Failed",
+        "message": "=The system could not extract data from a candidate's resume. Manual review required.\n\nResume URL:\n{{ $json['resume text'] }}\nError:\n{{ $json.errorMessage }}\n\nProcessed At:\n{{ $json.processedAt }}\n\nWhat to do:\n- Open the resume link\n- Review manually\n- Update status in your tracker\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3408,
+        3088
+      ],
+      "id": "2277f6d7-7ae8-448e-ad11-ab890d542f8c",
+      "name": "Send a message4",
+      "webhookId": "053ea82e-4ee7-47a8-bb26-ff4f9bd19dc7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NmUItFE5zfsf8xfm",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ",
+          "mode": "list",
+          "cachedResultName": "IT Candidate Screening Application (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 562248036,
+          "mode": "list",
+          "cachedResultName": "ERROR",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit#gid=562248036"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "resume",
+              "displayName": "resume",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Role Applying For",
+              "displayName": "Role Applying For",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notice Period",
+              "displayName": "Notice Period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Experience (in year)",
+              "displayName": "Total Experience (in year)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "submittedAt",
+              "displayName": "submittedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "formMode",
+              "displayName": "formMode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "resume text",
+              "displayName": "resume text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "processedAt",
+              "displayName": "processedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "errorMessage",
+              "displayName": "errorMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "recruiter mail",
+              "displayName": "recruiter mail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3184,
+        3088
+      ],
+      "id": "63b00a03-059b-47c8-905a-592b413774fa",
+      "name": "Append or update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4imvPQ4nmeQps7Q0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ",
+          "mode": "list",
+          "cachedResultName": "IT Candidate Screening Application (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1669070375,
+          "mode": "list",
+          "cachedResultName": "Review",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit#gid=1669070375"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $('On form submission').item.json.submittedAt }}",
+            "Full Name": "={{ $('On form submission').item.json.Name }}",
+            "Email Address": "={{ $('On form submission').item.json['Email Address'] }}",
+            "Phone Number": "={{ $('On form submission').item.json['Phone Number'] }}",
+            "Role Applying For": "={{ $('On form submission').item.json['Role Applying For'] }}",
+            "Upload Resume (PDF Only)": "={{ $('Extract from File').item.json.text }}",
+            "Total Experience (Years)": "={{ $('On form submission').item.json['Total Experience (in year)'] }}",
+            "Notice Period": "={{ $('On form submission').item.json['Notice Period'] }}",
+            "parsed_skills": "={{ $('Code in JavaScript1').item.json.skills }}",
+            "parsed_current_company": "={{ $('Code in JavaScript1').item.json.currentCompany }}",
+            "parsed_education": "={{ $('Code in JavaScript1').item.json.education }}",
+            "summary ": "={{ $('Code in JavaScript1').item.json.summary }}",
+            "score_total": "={{ $('Append or update row in sheet1').item.json.score_total }}",
+            "score_reason": "={{ $('Append or update row in sheet1').item.json.score_reason }}",
+            "screening_category": "={{ $('Categorize Candidate').item.json.category }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Role Applying For",
+              "displayName": "Role Applying For",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Upload Resume (PDF Only)",
+              "displayName": "Upload Resume (PDF Only)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Experience (Years)",
+              "displayName": "Total Experience (Years)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notice Period",
+              "displayName": "Notice Period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_skills",
+              "displayName": "parsed_skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_experience_years",
+              "displayName": "parsed_experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_current_company",
+              "displayName": "parsed_current_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_education",
+              "displayName": "parsed_education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary ",
+              "displayName": "summary ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "screening_category",
+              "displayName": "screening_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score_reason",
+              "displayName": "score_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4064,
+        2720
+      ],
+      "id": "4c3f046a-2f83-429e-877c-8d63bad7e100",
+      "name": "Append row in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4imvPQ4nmeQps7Q0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ",
+          "mode": "list",
+          "cachedResultName": "IT Candidate Screening Application (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1770165640,
+          "mode": "list",
+          "cachedResultName": "Shortlisted ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit#gid=1770165640"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $('On form submission').item.json.submittedAt }}",
+            "Full Name": "={{ $('On form submission').item.json.Name }}",
+            "Phone Number": "={{ $('On form submission').item.json['Phone Number'] }}",
+            "Email Address": "={{ $('On form submission').item.json['Email Address'] }}",
+            "Role Applying For": "={{ $('On form submission').item.json['Role Applying For'] }}",
+            "Upload Resume (PDF Only)": "={{ $('Extract from File').item.json.text }}",
+            "Total Experience (Years)": "={{ $('On form submission').item.json['Total Experience (in year)'] }}",
+            "Notice Period": "={{ $('On form submission').item.json['Notice Period'] }}",
+            "parsed_skills": "={{ $('Code in JavaScript1').item.json.skills }}",
+            "parsed_current_company": "={{ $('Code in JavaScript1').item.json.currentCompany }}",
+            "parsed_education": "={{ $('Code in JavaScript1').item.json.education }}",
+            "summary ": "={{ $('Code in JavaScript1').item.json.summary }}",
+            "score_total": "={{ $('Append or update row in sheet1').item.json.score_total }}",
+            "screening_category": "={{ $('Append or update row in sheet1').item.json.screening_category }}",
+            "score_reason": "={{ $('Append or update row in sheet1').item.json.score_reason }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Role Applying For",
+              "displayName": "Role Applying For",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Upload Resume (PDF Only)",
+              "displayName": "Upload Resume (PDF Only)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Experience (Years)",
+              "displayName": "Total Experience (Years)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notice Period",
+              "displayName": "Notice Period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_skills",
+              "displayName": "parsed_skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_experience_years",
+              "displayName": "parsed_experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "parsed_current_company",
+              "displayName": "parsed_current_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "parsed_education",
+              "displayName": "parsed_education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "summary ",
+              "displayName": "summary ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "screening_category",
+              "displayName": "screening_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score_reason",
+              "displayName": "score_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4048,
+        2528
+      ],
+      "id": "4f73b832-c9b1-4206-ac91-a046fb6ed8d8",
+      "name": "Append row in sheet4",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4imvPQ4nmeQps7Q0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Append row in sheet4').item.json['Email Address'] }}",
+        "subject": "[Candidate Name] — [Role] — Shortlisted Profile",
+        "message": "=Hi {{ $('Append row in sheet4').item.json['Full Name'] }}, \n  Sharing the profile of your for the {{ $('Append row in sheet4').item.json['Role Applying For'] }} position.  Experience: {{ $('Append row in sheet4').item.json['Total Experience (Years)'] }} years   Notice period: {{ $('Append row in sheet4').item.json['Notice Period'] }} days  Summary:  {{ $('Append row in sheet4').item.json['summary '] }} Top skills: {{ $('Append row in sheet4').item.json.parsed_skills }}  . If you'd like to schedule an interview, let me know suitable slots or I will share calendar link. \nRegards,   Name  \nagency | 1234567890",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        4272,
+        2528
+      ],
+      "id": "f3d62477-45b3-4a48-a60c-3a30f3cc300a",
+      "name": "Send a message3",
+      "webhookId": "42dfe7f6-e60f-42f1-a9c6-891ae52c0b04",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NmUItFE5zfsf8xfm",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ",
+          "mode": "list",
+          "cachedResultName": "IT Candidate Screening Application (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1770165640,
+          "mode": "list",
+          "cachedResultName": "Shortlisted ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sgnxrZkvNgO47MuBWGxKH3CwlLdBYwaGkovf_jNGGBQ/edit#gid=1770165640"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "mail status": "={{ $json.labelIds[0] }}",
+            "Full Name": "={{ $('On form submission').item.json.Name }}"
+          },
+          "matchingColumns": [
+            "Full Name"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Full Name",
+              "displayName": "Full Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Address",
+              "displayName": "Email Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Role Applying For",
+              "displayName": "Role Applying For",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Upload Resume (PDF Only)",
+              "displayName": "Upload Resume (PDF Only)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total Experience (Years)",
+              "displayName": "Total Experience (Years)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notice Period",
+              "displayName": "Notice Period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "parsed_skills",
+              "displayName": "parsed_skills",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "parsed_experience_years",
+              "displayName": "parsed_experience_years",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "parsed_current_company",
+              "displayName": "parsed_current_company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "parsed_education",
+              "displayName": "parsed_education",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "summary ",
+              "displayName": "summary ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "screening_category",
+              "displayName": "screening_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_reason",
+              "displayName": "score_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "mail status",
+              "displayName": "mail status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4496,
+        2528
+      ],
+      "id": "0eff26c3-e061-4189-87c9-e17696dade6f",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4imvPQ4nmeQps7Q0",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Parse Score Response": {
+      "main": [
+        [
+          {
+            "node": "Categorize Candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Categorize Candidate": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Parsing Failed": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark Parsing Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Parse Score Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scoring Configuration": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Scoring Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Send a message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet4": {
+      "main": [
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message3": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "f8aeaac2-b47f-4070-a9d5-61ab01bc02f0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7710ff9f153d410d5b117487f4996b34b2541cd8b5c6e7f9884fa3099093407b"
+  },
+  "id": "t839KAYa197TOZWt",
+  "tags": []
+}
